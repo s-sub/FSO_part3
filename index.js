@@ -1,9 +1,15 @@
+require('dotenv').config()
 const http = require('http')
 const express = require('express')
 var morgan = require('morgan')
 const app = express()
-
+const Person = require('./models/person')
 const cors = require('cors')
+const person = require('./models/person')
+
+
+
+const Person = mongoose.model('Person', personSchema)
 
 app.use(express.json())
 app.use(cors())
@@ -18,6 +24,8 @@ app.use(morgan(function (tokens, req, res) {
       JSON.stringify(req.body)
     ].join(' ')
   }))
+
+ 
 
 let persons =
     [
@@ -48,7 +56,9 @@ app.get('/', (request, response) => {
 })
     
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+  Person.find({}).then(people => {
+    response.json(people)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -71,20 +81,23 @@ app.delete('/api/persons/:id', (request, response) => {
   })
 
 app.post('/api/persons', (request, response) => {
-    const person = request.body
-    person.id = Math.floor(10000*Math.random())
-    if (!person.name || !person.number) {
+    const body = request.body
+    // person.id = Math.floor(10000*Math.random())
+    if (!body.name || !body.number) {
         return response.status(400).json({error: 'Name or number missing'})
     }
-    else if ((persons.find(p1 => person.name==p1.name))) {
+    else if ((body.find(p1 => body.name==p1.name))) {
         return response.status(400).json({error: 'Name already exists'})
     }
     else {
-        // morgan.token('id', function getId (req) {
-        //     return req.name, req.number
-        //   })
-        persons.concat[person]
-        response.json(person)
+        const person = new Person({
+          name: body.name,
+          number: body.number 
+        })
+        person.save().then(savedPerson => {
+          persons.concat[savedperson]
+          response.json(person)
+        })
     }
 })
 
