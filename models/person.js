@@ -1,10 +1,8 @@
 const mongoose = require('mongoose')
 
-// const mongopw = process.env.local.MONGODB_PASSWORD
-const mongopw = 'oSjmi10iJDqwItMV'
+const url = process.env.MONGODB_URI
 
-const url =
-  `mongodb+srv://fullstack:${mongopw}@cluster0.7wu0l.mongodb.net/phonebookApp?retryWrites=true&w=majority`
+console.log('connecting to', url)
 
 mongoose.connect(url)
 .then(result => {
@@ -15,8 +13,21 @@ mongoose.connect(url)
 })
 
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        minLength: 3,
+        required: true
+    },
+    number: {
+        type: String,
+        minLength: 8,
+        validate: {
+            validator: function(v) {
+                return /\d{2,3}-[0,9]+/.test(v);
+            },
+            message: props => `${props.value} is not a valid phone number!`
+        }
+    }
 })
 
 personSchema.set('toJSON', {
